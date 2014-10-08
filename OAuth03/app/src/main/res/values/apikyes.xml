@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    Twitter Application Management（https://apps.twitter.com/）に、当アプリを登録した際の
+    Consumer Key (API Key), Consumer Secret (API Secret), Callback URLを記述します。
+    -->
+    <string name="twitter_api_key">xxx</string>
+    <string name="twitter_api_secret">xxx</string>
+    <string name="twitter_callback_url">https://xxx/xxx</string>
+</resources>
