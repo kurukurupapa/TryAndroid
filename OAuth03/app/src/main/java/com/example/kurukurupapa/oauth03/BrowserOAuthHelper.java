@@ -147,7 +147,7 @@ public class BrowserOAuthHelper {
         final String authUrl = mService.getAuthorizationUrl(mRequestToken);
         Log.v(TAG, "authUrl=" + authUrl);
 
-        // WebViewに、Twitterの連携アプリ認証画面を表示します。
+        // ブラウザに、Twitterの連携アプリ認証画面を表示します。
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
         mContext.startActivity(intent);
 

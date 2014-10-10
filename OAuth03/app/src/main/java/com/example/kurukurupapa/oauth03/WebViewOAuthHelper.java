@@ -30,7 +30,7 @@ public class WebViewOAuthHelper {
     private OAuthService mService;
     private Token mRequestToken;
     private Token mAccessToken;
-    private String mOauthVerifier;
+    private String mOAuthVerifier;
     private String mBody;
 
     public WebViewOAuthHelper(Context context, WebView webView, Runnable okRunnable) {
@@ -69,7 +69,7 @@ public class WebViewOAuthHelper {
 
     public void clear() {
         mRequestToken = null;
-        mOauthVerifier = null;
+        mOAuthVerifier = null;
         mAccessToken = null;
         mBody = null;
     }
@@ -100,11 +100,9 @@ public class WebViewOAuthHelper {
         }
 
         mService = new ServiceBuilder()
-                //.provider(TwitterApi.class)    //Twitterの場合
                 .provider(TwitterApi.SSL.class)    //Twitterの場合
                 .apiKey(apiKey)
                 .apiSecret(apiSecret)
-                //.callback("http://your_callback_url")
                 .callback(callbackUrl)
                 .build();
         Log.v(TAG, "OAuthServiceオブジェクトを生成しました。");
@@ -142,7 +140,7 @@ public class WebViewOAuthHelper {
      */
     private boolean auth() {
         Log.v(TAG, "auth called");
-        if (mOauthVerifier != null) {
+        if (mOAuthVerifier != null) {
             return true;
         }
 
@@ -153,7 +151,6 @@ public class WebViewOAuthHelper {
         // コールバックURLを使用する場合は、
         // Twitterの認証成功後、コールバックURLの遷移し、
         // GETパラメータとして、oauth_verifierが取得できます。
-        // 今回は、コールバックURLの遷移先を用意しませんので、PINを使用します。
 
         // WebViewを使った認証
         // ただし、セキュリティ的に推奨されない。
@@ -175,27 +172,32 @@ public class WebViewOAuthHelper {
                 Log.v(TAG, "url=" + url);
 
                 if (url != null && url.startsWith(callbackUrl)) {
-                    Uri uri = Uri.parse(url);
-                    String oauthToken = uri.getQueryParameter("oauth_token");
-                    String oauthVerifier = uri.getQueryParameter("oauth_verifier");
-
-                    // トークンをチェックします。
-                    if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
-                        // 処理を中止します。
-                        Log.v(TAG, "トークンエラーです。oauthToken=" + oauthToken + ",mRequestToken.getToken()=" + mRequestToken.getToken());
-                        Toast.makeText(mContext, "エラーが発生しました。", Toast.LENGTH_LONG).show();
-                        clear();
-                        return;
-                    }
-
-                    mOauthVerifier = oauthVerifier;
-                    start();
+                    setOAuthVerifier(Uri.parse(url));
                 }
             }
         });
         // WebViewに、Twitterの連携アプリ認証画面を表示します。
         mWebView.loadUrl(authUrl);
         return false;
+    }
+
+    public void setOAuthVerifier(Uri uri) {
+        Log.v(TAG, "setOAuthVerifier called");
+        String oauthToken = uri.getQueryParameter("oauth_token");
+        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
+
+        // トークンをチェックします。
+        if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
+            // 処理を中止します。
+            Log.d(TAG, "トークンエラーです。oauthToken=" + oauthToken + ",mRequestToken.getToken()=" + mRequestToken.getToken());
+            Toast.makeText(mContext, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+            clear();
+            return;
+        }
+
+        mOAuthVerifier = oauthVerifier;
+        Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
+        start();
     }
 
     /**
@@ -211,7 +213,7 @@ public class WebViewOAuthHelper {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 // HTTP通信を行うため、非UIスレッドで実行します。
-                Verifier verifier = new Verifier(mOauthVerifier);
+                Verifier verifier = new Verifier(mOAuthVerifier);
                 mAccessToken = mService.getAccessToken(mRequestToken, verifier); // the requestToken you had from step 2
                 return true;
             }

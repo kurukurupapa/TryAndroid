@@ -53,7 +53,7 @@ public class BrowserActivity extends Activity {
     }
 
     private void onOAuthOk() {
-        Log.v(TAG, "onOAuthFinish called");
+        Log.v(TAG, "onOAuthOk called");
         Intent intent = new Intent();
         intent.putExtra(MyActivity.KEY_RESULT, mOAuthHelper.getResult());
         setResult(RESULT_OK, intent);

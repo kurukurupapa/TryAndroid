@@ -14,18 +14,38 @@
         android:layout_height="fill_parent">
 
         <TextView
-            android:text="１．「連携確認」ボタンを押して、TwitterからPIN（数字7桁のコード）を取得してください。\n２．取得したPINを下記に入力して、「連携実施」ボタンを押してください。"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/text_view"
-            android:layout_weight="1" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="１．PIN入手"
+            android:id="@+id/title1_text_view" />
+
+        <TextView
+            android:text="「連携確認」ボタンを押して、TwitterからPIN（数字7桁のコード）を取得してください。"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text_view" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="連携確認"
+            android:id="@+id/browser_button"
+            android:onClick="onBrowserButtonClick" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="PIN"
-            android:id="@+id/pin_text_view" />
+            android:text="２．PIN登録"
+            android:id="@+id/title2_text_view"
+            android:layout_marginTop="@dimen/activity_horizontal_margin" />
+
+        <TextView
+            android:text="取得したPINを下記に入力して、「連携実施」ボタンを押してください。"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView" />
 
         <EditText
             android:layout_width="fill_parent"
@@ -35,16 +55,15 @@
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="連携確認"
-            android:id="@+id/browser_button"
-            android:onClick="onBrowserButtonClick" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
             android:text="連携実施"
             android:id="@+id/auth_button"
             android:onClick="onAuthButtonClick" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/dummy_text_view"
+            android:layout_weight="1" />
 
         <Button
             android:layout_width="fill_parent"
