@@ -63,6 +63,16 @@ public class IntentFilterActivity extends Activity {
 
         // 当アクティビティには、launchMode="singleInstance"を設定したため、呼び元のアクティビティとタスクが分かれています。
         // 上記のfinishメソッド呼び出しだけでは、呼び元のアクティビティに戻れませんので、次の処理を行います。
+
+        // アプリ二重起動について - 肉になるメモ
+        // http://kazumeat.hatenablog.com/entry/20110125/1295941612
+        //
+        // Y.A.M の 雑記帳: Android launchMode の違い
+        // http://y-anz-m.blogspot.jp/2011/02/androidlauchmode.html
+        //
+        // IntentのCategoryとExtraとFlagの一覧表を作ってみたよ - hyoromoのブログ
+        // http://hyoromo.hatenablog.com/entry/20091003/1254590170
+
         Intent intent = new Intent();
         intent.setClass(this, MyActivity.class);
         intent.putExtra(MyActivity.KEY_RESULT, mOAuthHelper.getResult());

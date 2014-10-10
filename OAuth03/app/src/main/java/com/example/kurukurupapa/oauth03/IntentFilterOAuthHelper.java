@@ -139,6 +139,9 @@ public class IntentFilterOAuthHelper {
      *
      * AndroidからGoogle OAuthでプロフィール情報にアクセスする方法 - 今日の役に立たない一言 － Today’s Trifle! －
      * http://d.hatena.ne.jp/satoshis/20130119/p1
+     *
+     * 特定のURLをフックしてアプリを起動させる（暗黙的インテント） - tomstay's memo
+     * http://tomstay.hatenablog.jp/entry/20110719/1311072062
      */
     private boolean auth() {
         Log.v(TAG, "auth called");
