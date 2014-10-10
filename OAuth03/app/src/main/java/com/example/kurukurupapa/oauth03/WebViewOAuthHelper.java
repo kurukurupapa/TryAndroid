@@ -1,6 +1,7 @@
 package com.example.kurukurupapa.oauth03;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.webkit.WebView;
@@ -174,21 +175,9 @@ public class WebViewOAuthHelper {
                 Log.v(TAG, "url=" + url);
 
                 if (url != null && url.startsWith(callbackUrl)) {
-                    // URLパラメータを分解する。
-                    String[] params = url.split("\\?")[1].split("&");
-
-                    String oauthToken = null;
-                    String oauthVerifier = null;
-                    for (String param : params) {
-                        String[] keyValue = param.split("=");
-                        String key = keyValue[0];
-                        String value = keyValue[1];
-                        if (key.equals("oauth_token")) {
-                            oauthToken = value;
-                        } else if (key.equals("oauth_verifier")) {
-                            oauthVerifier = value;
-                        }
-                    }
+                    Uri uri = Uri.parse(url);
+                    String oauthToken = uri.getQueryParameter("oauth_token");
+                    String oauthVerifier = uri.getQueryParameter("oauth_verifier");
 
                     // トークンをチェックします。
                     if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
