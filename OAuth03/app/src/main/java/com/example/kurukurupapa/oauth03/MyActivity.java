@@ -24,6 +24,7 @@ public class MyActivity extends Activity {
     private static final String TAG = MyActivity.class.getSimpleName();
     private static final int REQUEST_CODE_WEB_VIEW = 1;
     private static final int REQUEST_CODE_BROWSER = 2;
+    private static final int REQUEST_CODE_INTENT_FILTER = 3;
     public static final String KEY_RESULT = "KEY_RESULT";
 
     private RadioGroup mRadioGroup;
@@ -57,6 +58,18 @@ public class MyActivity extends Activity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v(TAG, "onResume called");
+
+        Intent intent = getIntent();
+        String result = intent.getStringExtra(KEY_RESULT);
+        if (result != null) {
+            mTextView.setText(result);
+        }
+    }
+
     public void onStartButtonClick(View v) {
         Log.v(TAG, "onStartButtonClick called");
 
@@ -70,6 +83,10 @@ public class MyActivity extends Activity {
             case R.id.browser_radio_button:
                 activityClass = BrowserActivity.class;
                 requestCode = REQUEST_CODE_BROWSER;
+                break;
+            case R.id.intent_filter_radio_button:
+                activityClass = IntentFilterActivity.class;
+                requestCode = REQUEST_CODE_INTENT_FILTER;
                 break;
         }
         Intent intent = new Intent();

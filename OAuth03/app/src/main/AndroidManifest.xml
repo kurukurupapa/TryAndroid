@@ -32,6 +32,21 @@
             android:name=".BrowserActivity"
             android:label="@string/title_activity_browser" >
         </activity>
+        <!--
+        ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
+        -->
+        <activity
+            android:name=".IntentFilterActivity"
+            android:label="@string/title_activity_intent_filter"
+            android:launchMode="singleInstance"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="tryandroidoauth" />
+            </intent-filter>
+        </activity>
     </application>
 
     <!--

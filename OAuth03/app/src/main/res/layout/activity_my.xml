@@ -42,8 +42,14 @@
             <RadioButton
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="ブラウザ方式"
+                android:text="ブラウザPIN方式"
                 android:id="@+id/browser_radio_button" />
+
+            <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="ブラウザIntentFilter方式"
+                android:id="@+id/intent_filter_radio_button" />
         </RadioGroup>
 
         <Button
