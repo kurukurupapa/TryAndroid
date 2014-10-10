@@ -47,6 +47,21 @@
                 <data android:scheme="tryandroidoauth" />
             </intent-filter>
         </activity>
+        <!--
+        ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
+        -->
+        <activity
+            android:name=".intentfiltergoogle.IntentFilterGoogleActivity"
+            android:label="@string/title_activity_intent_filter_google"
+            android:launchMode="singleInstance"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="tryandroidoauth.kurukurupapa.co.jp"/>
+            </intent-filter>
+        </activity>
     </application>
 
     <!--

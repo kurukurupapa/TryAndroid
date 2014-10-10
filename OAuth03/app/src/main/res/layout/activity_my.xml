@@ -35,21 +35,27 @@
             <RadioButton
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="WebView方式"
+                android:text="WebView方式（Twitter）"
                 android:id="@+id/web_view_radio_button"
                 android:checked="true" />
 
             <RadioButton
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="ブラウザPIN方式"
+                android:text="ブラウザPIN方式（Twitter）"
                 android:id="@+id/browser_radio_button" />
 
             <RadioButton
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="ブラウザIntentFilter方式"
+                android:text="ブラウザIntentFilter方式（Twitter）"
                 android:id="@+id/intent_filter_radio_button" />
+
+            <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="ブラウザIntentFilter方式（Google）"
+                android:id="@+id/intent_filter_google_radio_button" />
         </RadioGroup>
 
         <Button

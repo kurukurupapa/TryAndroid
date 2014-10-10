@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.example.kurukurupapa.oauth03.intentfiltergoogle.IntentFilterGoogleActivity;
+
 /**
  * Androidで、TwitterのOAuth認証をしてみます。
  *
@@ -25,6 +27,7 @@ public class MyActivity extends Activity {
     private static final int REQUEST_CODE_WEB_VIEW = 1;
     private static final int REQUEST_CODE_BROWSER = 2;
     private static final int REQUEST_CODE_INTENT_FILTER = 3;
+    private static final int REQUEST_CODE_INTENT_FILTER_GOOGLE = 4;
     public static final String KEY_RESULT = "KEY_RESULT";
 
     private RadioGroup mRadioGroup;
@@ -65,9 +68,7 @@ public class MyActivity extends Activity {
 
         Intent intent = getIntent();
         String result = intent.getStringExtra(KEY_RESULT);
-        if (result != null) {
-            mTextView.setText(result);
-        }
+        setResult(intent.getStringExtra(KEY_RESULT));
     }
 
     public void onStartButtonClick(View v) {
@@ -88,6 +89,10 @@ public class MyActivity extends Activity {
                 activityClass = IntentFilterActivity.class;
                 requestCode = REQUEST_CODE_INTENT_FILTER;
                 break;
+            case R.id.intent_filter_google_radio_button:
+                activityClass = IntentFilterGoogleActivity.class;
+                requestCode = REQUEST_CODE_INTENT_FILTER_GOOGLE;
+                break;
         }
         Intent intent = new Intent();
         intent.setClass(this, activityClass);
@@ -98,13 +103,19 @@ public class MyActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         switch (resultCode) {
             case RESULT_OK:
-                String result = intent.getStringExtra(KEY_RESULT);
-                mTextView.setText(result);
+                setResult(intent.getStringExtra(KEY_RESULT));
                 break;
             default:
-                mTextView.setText("");
+                setResult("");
                 break;
         }
     }
 
+    private void setResult(String result) {
+        if (result == null || result.isEmpty()) {
+            mTextView.setText("");
+            return;
+        }
+        mTextView.setText(result);
+    }
 }

@@ -7,5 +7,6 @@
     <string name="title_activity_web_view">WebViewActivity</string>
     <string name="title_activity_browser">BrowserActivity</string>
     <string name="title_activity_intent_filter">IntentFilterActivity</string>
+    <string name="title_activity_intent_filter_google">IntentFilterGoogleActivity</string>
 
 </resources>
