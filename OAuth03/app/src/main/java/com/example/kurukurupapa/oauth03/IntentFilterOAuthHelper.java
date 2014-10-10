@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.TwitterApi;
 import org.scribe.model.OAuthRequest;
@@ -29,6 +32,7 @@ public class IntentFilterOAuthHelper {
     private Token mAccessToken;
     private String mOAuthVerifier;
     private String mBody;
+    private String mJson;
 
     public IntentFilterOAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
@@ -218,6 +222,10 @@ public class IntentFilterOAuthHelper {
                 Response response = request.send();
                 mBody = response.getBody();
                 Log.v(TAG, "mBody=" + mBody);
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                TwitterAccount account = gson.fromJson(mBody, TwitterAccount.class);
+                mJson = gson.toJson(account);
                 return true;
             }
             @Override
@@ -232,6 +240,6 @@ public class IntentFilterOAuthHelper {
     }
 
     public String getResult() {
-        return mBody;
+        return mJson;
     }
 }
