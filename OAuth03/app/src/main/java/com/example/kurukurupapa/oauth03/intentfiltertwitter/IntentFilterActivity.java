@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.intentfiltertwitter;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,6 +8,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.example.kurukurupapa.oauth03.MyActivity;
+import com.example.kurukurupapa.oauth03.R;
 
 public class IntentFilterActivity extends Activity {
     private static final String TAG = IntentFilterActivity.class.getSimpleName();

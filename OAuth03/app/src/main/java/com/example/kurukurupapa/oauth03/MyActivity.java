@@ -8,7 +8,10 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.example.kurukurupapa.oauth03.browsertwitter.BrowserActivity;
 import com.example.kurukurupapa.oauth03.intentfiltergoogle.IntentFilterGoogleActivity;
+import com.example.kurukurupapa.oauth03.intentfiltertwitter.IntentFilterActivity;
+import com.example.kurukurupapa.oauth03.webviewtwitter.WebViewActivity;
 
 /**
  * Androidで、TwitterのOAuth認証をしてみます。
@@ -68,7 +71,9 @@ public class MyActivity extends Activity {
 
         Intent intent = getIntent();
         String result = intent.getStringExtra(KEY_RESULT);
-        setResult(intent.getStringExtra(KEY_RESULT));
+        if (result != null) {
+            setResult(result);
+        }
     }
 
     public void onStartButtonClick(View v) {

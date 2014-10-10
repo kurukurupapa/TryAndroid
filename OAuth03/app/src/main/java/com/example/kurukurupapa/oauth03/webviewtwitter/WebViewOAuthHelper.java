@@ -1,14 +1,14 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.webviewtwitter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.example.kurukurupapa.oauth03.R;
 
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.TwitterApi;
@@ -19,12 +19,14 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-public class IntentFilterOAuthHelper {
-    private static final String TAG = IntentFilterOAuthHelper.class.getSimpleName();
+public class WebViewOAuthHelper {
+    private static final String TAG = WebViewOAuthHelper.class.getSimpleName();
 
     private final String apiKey;
     private final String apiSecret;
+    private final String callbackUrl;
     private final Context mContext;
+    private final WebView mWebView;
     private final Runnable mOkRunnable;
 
     private OAuthService mService;
@@ -32,13 +34,14 @@ public class IntentFilterOAuthHelper {
     private Token mAccessToken;
     private String mOAuthVerifier;
     private String mBody;
-    private String mJson;
 
-    public IntentFilterOAuthHelper(Context context, Runnable okRunnable) {
+    public WebViewOAuthHelper(Context context, WebView webView, Runnable okRunnable) {
         this.mContext = context;
+        this.mWebView = webView;
         this.mOkRunnable = okRunnable;
         this.apiKey = context.getString(R.string.twitter_api_key);
         this.apiSecret = context.getString(R.string.twitter_api_secret);
+        this.callbackUrl = context.getString(R.string.twitter_callback_url);
     }
 
     public void start() {
@@ -99,10 +102,10 @@ public class IntentFilterOAuthHelper {
         }
 
         mService = new ServiceBuilder()
-                .provider(TwitterApi.SSL.class)
+                .provider(TwitterApi.SSL.class)    //Twitterの場合
                 .apiKey(apiKey)
                 .apiSecret(apiSecret)
-                .callback("tryandroidoauth://dummy_url")
+                .callback(callbackUrl)
                 .build();
         Log.v(TAG, "OAuthServiceオブジェクトを生成しました。");
     }
@@ -135,17 +138,7 @@ public class IntentFilterOAuthHelper {
     /**
      * ユーザに認証してもらう
      *
-     * コールバックURLとインテントフィルターを使用します。
-     * ※PINは使用しません。
-     *
-     * OAuthの認証にWebViewを使うのはやめよう - Shogo's Blog
-     * http://shogo82148.github.io/blog/2012/11/24/no-more-webview/
-     *
-     * AndroidからGoogle OAuthでプロフィール情報にアクセスする方法 - 今日の役に立たない一言 － Today’s Trifle! －
-     * http://d.hatena.ne.jp/satoshis/20130119/p1
-     *
-     * 特定のURLをフックしてアプリを起動させる（暗黙的インテント） - tomstay's memo
-     * http://tomstay.hatenablog.jp/entry/20110719/1311072062
+     * WebViewを使用します。
      */
     private boolean auth() {
         Log.v(TAG, "auth called");
@@ -157,10 +150,36 @@ public class IntentFilterOAuthHelper {
         final String authUrl = mService.getAuthorizationUrl(mRequestToken);
         Log.v(TAG, "authUrl=" + authUrl);
 
-        // ブラウザに、Twitterの連携アプリ認証画面を表示します。
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-        mContext.startActivity(intent);
+        // コールバックURLを使用する場合は、
+        // Twitterの認証成功後、コールバックURLの遷移し、
+        // GETパラメータとして、oauth_verifierが取得できます。
 
+        // WebViewを使った認証
+        // ただし、セキュリティ的に推奨されない。
+        // WebViewはUIスレッドで操作する必要がある。
+        // 参考：
+        // Twitter4jを使ってOAuth認証をアプリ内で行う方法 - 素人のアンドロイドアプリ開発日記
+        // http://andante.in/i/android%E3%82%A2%E3%83%97%E3%83%AAtips/twitter4j%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6oauth%E8%AA%8D%E8%A8%BC%E3%82%92%E3%82%A2%E3%83%97%E3%83%AA%E5%86%85%E3%81%A7%E8%A1%8C%E3%81%86%E6%96%B9%E6%B3%95/
+
+        // JavaScript有効化
+        //mWebView.getSettings().setJavaScriptEnabled(true);
+        // ボタン/リンク操作で標準ブラウザを起動させない
+        mWebView.setWebViewClient(new WebViewClient(){
+            /**
+             * ページ描画完了時の処理です。
+             */
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                Log.v(TAG, "url=" + url);
+
+                if (url != null && url.startsWith(callbackUrl)) {
+                    setOAuthVerifier(Uri.parse(url));
+                }
+            }
+        });
+        // WebViewに、Twitterの連携アプリ認証画面を表示します。
+        mWebView.loadUrl(authUrl);
         return false;
     }
 
@@ -180,6 +199,7 @@ public class IntentFilterOAuthHelper {
 
         mOAuthVerifier = oauthVerifier;
         Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
+        start();
     }
 
     /**
@@ -222,10 +242,6 @@ public class IntentFilterOAuthHelper {
                 Response response = request.send();
                 mBody = response.getBody();
                 Log.v(TAG, "mBody=" + mBody);
-
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                TwitterAccount account = gson.fromJson(mBody, TwitterAccount.class);
-                mJson = gson.toJson(account);
                 return true;
             }
             @Override
@@ -240,6 +256,6 @@ public class IntentFilterOAuthHelper {
     }
 
     public String getResult() {
-        return mJson;
+        return mBody;
     }
 }

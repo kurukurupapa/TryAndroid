@@ -1,10 +1,12 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.browsertwitter;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.example.kurukurupapa.oauth03.R;
 
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.TwitterApi;

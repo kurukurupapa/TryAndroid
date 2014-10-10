@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.browsertwitter;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,6 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.kurukurupapa.oauth03.MyActivity;
+import com.example.kurukurupapa.oauth03.R;
 
 public class BrowserActivity extends Activity {
     private static final String TAG = BrowserActivity.class.getSimpleName();
