@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.kurukurupapa.oauth03.GoogleOAuthUserInfo;
 import com.example.kurukurupapa.oauth03.GooglePlusAccount;
 import com.example.kurukurupapa.oauth03.R;
 import com.google.gson.Gson;
@@ -61,15 +62,14 @@ public class IntentFilterGoogleOAuthHelper {
     private OAuthService mService;
     private Token mAccessToken;
     private String mOAuthVerifier;
-    private String mBody;
-    private String mJson;
+    private String mResult;
 
     public IntentFilterGoogleOAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
         this.mOkRunnable = okRunnable;
-        this.mClientKey = context.getString(R.string.google_web_client_key);
-        this.mClientSecret = context.getString(R.string.google_web_client_secret);
-        this.mRedirectUrl = context.getString(R.string.google_web_redirect_url);
+        this.mClientKey = context.getString(R.string.google_client_key);
+        this.mClientSecret = context.getString(R.string.google_client_secret);
+        this.mRedirectUrl = context.getString(R.string.google_redirect_url);
     }
 
     public void start() {
@@ -95,7 +95,7 @@ public class IntentFilterGoogleOAuthHelper {
     public void clear() {
         mOAuthVerifier = null;
         mAccessToken = null;
-        mBody = null;
+        mResult = null;
     }
 
     /**
@@ -121,10 +121,9 @@ public class IntentFilterGoogleOAuthHelper {
                 .callback(mRedirectUrl)
                 .scope(
                         "https://www.googleapis.com/auth/userinfo.profile " +
-                                "https://www.googleapis.com/auth/userinfo.email " +
-                                "https://www.googleapis.com/auth/plus.me"
+                        "https://www.googleapis.com/auth/userinfo.email " +
+                        "https://www.googleapis.com/auth/plus.me"
                 )
-                //.grantType(OAuthConstants.AUTHORIZATION_CODE)
                 .build();
         Log.v(TAG, "OAuthServiceオブジェクトを生成しました。");
     }
@@ -150,7 +149,7 @@ public class IntentFilterGoogleOAuthHelper {
             return true;
         }
 
-        // Twitterの認証ページURLを取得します。
+        // 認証ページURLを取得します。
         final String authUrl = mService.getAuthorizationUrl(null);
         Log.v(TAG, "authUrl=" + authUrl);
 
@@ -161,23 +160,13 @@ public class IntentFilterGoogleOAuthHelper {
         return false;
     }
 
+    /**
+     * ブラウザでの認証後、コールバックURLに遷移した際に付加される（GETパラメータ）認証情報を設定します。
+     * @param uri コールバックURL＋認証情報（GETパラメータ）
+     */
     public void setOAuthVerifier(Uri uri) {
         Log.v(TAG, "setOAuthVerifier called");
-//        String oauthToken = uri.getQueryParameter("oauth_token");
-//        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
-        String code = uri.getQueryParameter("code");
-
-//        // トークンをチェックします。
-//        if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
-//            // 処理を中止します。
-//            Log.d(TAG, "トークンエラーです。oauthToken=" + oauthToken + ",mRequestToken.getToken()=" + mRequestToken.getToken());
-//            Toast.makeText(mContext, "エラーが発生しました。", Toast.LENGTH_LONG).show();
-//            clear();
-//            return;
-//        }
-
-        //mOAuthVerifier = oauthVerifier;
-        mOAuthVerifier = code;
+        mOAuthVerifier = uri.getQueryParameter("code");
         Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
     }
 
@@ -216,17 +205,36 @@ public class IntentFilterGoogleOAuthHelper {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 // HTTP通信を行うため、非UIスレッドで実行します。
-                OAuthRequest request = new OAuthRequest(Verb.GET, "https://www.googleapis.com/plus/v1/people/me");
-                mService.signRequest(mAccessToken, request); // the access token from step 4
-                Response response = request.send();
-                mBody = response.getBody();
-                Log.v(TAG, "mBody=" + mBody);
-
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                GooglePlusAccount account = gson.fromJson(mBody, GooglePlusAccount.class);
-                mJson = gson.toJson(account);
+                mResult = requestOAuthUserInfo() + "\n" + requestPlusPeople();
                 return true;
             }
+
+            private String requestOAuthUserInfo() {
+                String url = "https://www.googleapis.com/oauth2/v2/userinfo";
+                OAuthRequest request = new OAuthRequest(Verb.GET, url);
+                mService.signRequest(mAccessToken, request);
+                Response response = request.send();
+                String body = response.getBody();
+                Log.v(TAG, "url=" + url + ", response=" + body);
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                GoogleOAuthUserInfo oauthUserInfo = gson.fromJson(body, GoogleOAuthUserInfo.class);
+                return "\"" + url + "\": " + gson.toJson(oauthUserInfo);
+            }
+
+            private String requestPlusPeople() {
+                String url = "https://www.googleapis.com/plus/v1/people/me";
+                OAuthRequest request = new OAuthRequest(Verb.GET, url);
+                mService.signRequest(mAccessToken, request);
+                Response response = request.send();
+                String body = response.getBody();
+                Log.v(TAG, "url=" + url + ", response=" + body);
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                GooglePlusAccount account = gson.fromJson(body, GooglePlusAccount.class);
+                return "\"" + url + "\": " + gson.toJson(account);
+            }
+
             @Override
             protected void onPostExecute(Boolean result) {
                 Log.v(TAG, "onPostExecute called");
@@ -239,6 +247,6 @@ public class IntentFilterGoogleOAuthHelper {
     }
 
     public String getResult() {
-        return mJson;
+        return mResult;
     }
 }

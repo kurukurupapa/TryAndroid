@@ -13,8 +13,8 @@
     Google
     -->
     <!--
-    <string name="google_web_client_key">xxx</string>
-    <string name="google_web_client_secret">xxx</string>
-    <string name="google_web_redirect_url">https://xxx/xxx</string>
+    <string name="google_client_key">xxx</string>
+    <string name="google_client_secret">xxx</string>
+    <string name="google_redirect_url">https://xxx/xxx</string>
     -->
 </resources>
