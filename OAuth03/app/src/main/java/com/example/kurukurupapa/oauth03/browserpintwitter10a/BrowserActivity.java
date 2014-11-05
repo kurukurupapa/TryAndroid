@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.browsertwitter;
+package com.example.kurukurupapa.oauth03.browserpintwitter10a;
 
 import android.app.Activity;
 import android.content.Intent;

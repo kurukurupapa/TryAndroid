@@ -1,12 +1,16 @@
-package com.example.kurukurupapa.oauth03.browsertwitter;
+package com.example.kurukurupapa.oauth03.browserintenttwitter10a;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.service.TwitterAccount;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.TwitterApi;
@@ -17,8 +21,8 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-public class BrowserOAuthHelper {
-    private static final String TAG = BrowserOAuthHelper.class.getSimpleName();
+public class IntentFilterOAuthHelper {
+    private static final String TAG = IntentFilterOAuthHelper.class.getSimpleName();
 
     private final String apiKey;
     private final String apiSecret;
@@ -28,10 +32,11 @@ public class BrowserOAuthHelper {
     private OAuthService mService;
     private Token mRequestToken;
     private Token mAccessToken;
-    private String mOAuthPin;
+    private String mOAuthVerifier;
     private String mBody;
+    private String mJson;
 
-    public BrowserOAuthHelper(Context context, Runnable okRunnable) {
+    public IntentFilterOAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
         this.mOkRunnable = okRunnable;
         this.apiKey = context.getString(R.string.twitter_api_key);
@@ -65,7 +70,7 @@ public class BrowserOAuthHelper {
 
     public void clear() {
         mRequestToken = null;
-        mOAuthPin = null;
+        mOAuthVerifier = null;
         mAccessToken = null;
         mBody = null;
     }
@@ -96,9 +101,10 @@ public class BrowserOAuthHelper {
         }
 
         mService = new ServiceBuilder()
-                .provider(TwitterApi.SSL.class)    //Twitterの場合
+                .provider(TwitterApi.SSL.class) // Twitter OAuth 1.0a
                 .apiKey(apiKey)
                 .apiSecret(apiSecret)
+                .callback("tryandroidoauth://dummy_url")
                 .build();
         Log.v(TAG, "OAuthServiceオブジェクトを生成しました。");
     }
@@ -131,15 +137,21 @@ public class BrowserOAuthHelper {
     /**
      * ユーザに認証してもらう
      *
-     * PINを使用します。
-     * ※コールバックURLは使用しません。
+     * コールバックURLとインテントフィルターを使用します。
+     * ※PINは使用しません。
      *
      * OAuthの認証にWebViewを使うのはやめよう - Shogo's Blog
      * http://shogo82148.github.io/blog/2012/11/24/no-more-webview/
+     *
+     * AndroidからGoogle OAuthでプロフィール情報にアクセスする方法 - 今日の役に立たない一言 － Today’s Trifle! －
+     * http://d.hatena.ne.jp/satoshis/20130119/p1
+     *
+     * 特定のURLをフックしてアプリを起動させる（暗黙的インテント） - tomstay's memo
+     * http://tomstay.hatenablog.jp/entry/20110719/1311072062
      */
     private boolean auth() {
         Log.v(TAG, "auth called");
-        if (mOAuthPin != null && mOAuthPin.length() > 0) {
+        if (mOAuthVerifier != null) {
             return true;
         }
 
@@ -154,9 +166,22 @@ public class BrowserOAuthHelper {
         return false;
     }
 
-    public void setOAuthPin(String oauthPin) {
-        mOAuthPin = oauthPin;
-        Log.v(TAG, "mOAuthPin=" + mOAuthPin);
+    public void setOAuthVerifier(Uri uri) {
+        Log.v(TAG, "setOAuthVerifier called");
+        String oauthToken = uri.getQueryParameter("oauth_token");
+        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
+
+        // トークンをチェックします。
+        if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
+            // 処理を中止します。
+            Log.d(TAG, "トークンエラーです。oauthToken=" + oauthToken + ",mRequestToken.getToken()=" + mRequestToken.getToken());
+            Toast.makeText(mContext, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+            clear();
+            return;
+        }
+
+        mOAuthVerifier = oauthVerifier;
+        Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
     }
 
     /**
@@ -172,7 +197,7 @@ public class BrowserOAuthHelper {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 // HTTP通信を行うため、非UIスレッドで実行します。
-                Verifier verifier = new Verifier(mOAuthPin);
+                Verifier verifier = new Verifier(mOAuthVerifier);
                 mAccessToken = mService.getAccessToken(mRequestToken, verifier); // the requestToken you had from step 2
                 return true;
             }
@@ -199,6 +224,10 @@ public class BrowserOAuthHelper {
                 Response response = request.send();
                 mBody = response.getBody();
                 Log.v(TAG, "mBody=" + mBody);
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                TwitterAccount account = gson.fromJson(mBody, TwitterAccount.class);
+                mJson = gson.toJson(account);
                 return true;
             }
             @Override
@@ -213,6 +242,6 @@ public class BrowserOAuthHelper {
     }
 
     public String getResult() {
-        return mBody;
+        return mJson;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.webviewtwitter;
+package com.example.kurukurupapa.oauth03.webviewtwitter10a;
 
 import android.content.Context;
 import android.net.Uri;

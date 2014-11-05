@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".webviewtwitter.WebViewActivity"
+            android:name=".webviewtwitter10a.WebViewActivity"
             android:label="@string/title_activity_web_view" >
         </activity>
 
@@ -29,7 +29,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".browsertwitter.BrowserActivity"
+            android:name=".browserpintwitter10a.BrowserActivity"
             android:label="@string/title_activity_browser" >
         </activity>
         <activity
@@ -41,7 +41,7 @@
         ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
         -->
         <activity
-            android:name=".intentfiltertwitter.IntentFilterActivity"
+            android:name=".browserintenttwitter10a.IntentFilterActivity"
             android:label="@string/title_activity_intent_filter"
             android:launchMode="singleInstance"
             >
@@ -56,7 +56,7 @@
         ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
         -->
         <activity
-            android:name=".intentfiltergoogle.IntentFilterGoogleActivity"
+            android:name=".browserintentgoogle20.IntentFilterGoogleActivity"
             android:label="@string/title_activity_intent_filter_google"
             android:launchMode="singleInstance"
             >

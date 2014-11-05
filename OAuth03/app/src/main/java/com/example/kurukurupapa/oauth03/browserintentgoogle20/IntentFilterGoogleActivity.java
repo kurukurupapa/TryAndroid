@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.intentfiltergoogle;
+package com.example.kurukurupapa.oauth03.browserintentgoogle20;
 
 import android.app.Activity;
 import android.content.Intent;

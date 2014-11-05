@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.intentfiltertwitter;
+package com.example.kurukurupapa.oauth03.browserintenttwitter10a;
 
 import android.app.Activity;
 import android.content.Intent;

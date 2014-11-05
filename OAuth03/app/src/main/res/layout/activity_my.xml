@@ -48,6 +48,12 @@
             <RadioButton
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:text="ブラウザPIN方式（Google）"
+                android:id="@+id/browser_pin_google_radio_button" />
+
+            <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
                 android:text="ブラウザIntentFilter方式（Twitter）"
                 android:id="@+id/intent_filter_radio_button" />
 

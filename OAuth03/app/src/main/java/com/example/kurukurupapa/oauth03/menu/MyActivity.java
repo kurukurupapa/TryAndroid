@@ -9,11 +9,11 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.browserintentgoogle20.IntentFilterGoogleActivity;
+import com.example.kurukurupapa.oauth03.browserintenttwitter10a.IntentFilterActivity;
 import com.example.kurukurupapa.oauth03.browserpingoogle20.BrowserPinGoogleActivity;
-import com.example.kurukurupapa.oauth03.browsertwitter.BrowserActivity;
-import com.example.kurukurupapa.oauth03.intentfiltergoogle.IntentFilterGoogleActivity;
-import com.example.kurukurupapa.oauth03.intentfiltertwitter.IntentFilterActivity;
-import com.example.kurukurupapa.oauth03.webviewtwitter.WebViewActivity;
+import com.example.kurukurupapa.oauth03.browserpintwitter10a.BrowserActivity;
+import com.example.kurukurupapa.oauth03.webviewtwitter10a.WebViewActivity;
 
 /**
  * Androidで、Twitter,GoogleのOAuth認証をしてみます。
