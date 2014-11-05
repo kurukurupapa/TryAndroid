@@ -96,11 +96,9 @@ public class BrowserOAuthHelper {
         }
 
         mService = new ServiceBuilder()
-                //.provider(TwitterApi.class)    //Twitterの場合
                 .provider(TwitterApi.SSL.class)    //Twitterの場合
                 .apiKey(apiKey)
                 .apiSecret(apiSecret)
-                //.callback("http://your_callback_url")
                 .build();
         Log.v(TAG, "OAuthServiceオブジェクトを生成しました。");
     }

@@ -8,7 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.kurukurupapa.oauth03.R;
-import com.example.kurukurupapa.oauth03.TwitterAccount;
+import com.example.kurukurupapa.oauth03.service.TwitterAccount;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -101,7 +101,7 @@ public class IntentFilterOAuthHelper {
         }
 
         mService = new ServiceBuilder()
-                .provider(TwitterApi.SSL.class)
+                .provider(TwitterApi.SSL.class) // Twitter OAuth 1.0a
                 .apiKey(apiKey)
                 .apiSecret(apiSecret)
                 .callback("tryandroidoauth://dummy_url")

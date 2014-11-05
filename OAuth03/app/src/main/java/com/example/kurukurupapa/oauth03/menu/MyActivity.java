@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.menu;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,13 +8,15 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.browserpingoogle20.BrowserPinGoogleActivity;
 import com.example.kurukurupapa.oauth03.browsertwitter.BrowserActivity;
 import com.example.kurukurupapa.oauth03.intentfiltergoogle.IntentFilterGoogleActivity;
 import com.example.kurukurupapa.oauth03.intentfiltertwitter.IntentFilterActivity;
 import com.example.kurukurupapa.oauth03.webviewtwitter.WebViewActivity;
 
 /**
- * Androidで、TwitterのOAuth認証をしてみます。
+ * Androidで、Twitter,GoogleのOAuth認証をしてみます。
  *
  * Scribeライブラリを使用します。
  *
@@ -27,10 +29,11 @@ import com.example.kurukurupapa.oauth03.webviewtwitter.WebViewActivity;
  */
 public class MyActivity extends Activity {
     private static final String TAG = MyActivity.class.getSimpleName();
-    private static final int REQUEST_CODE_WEB_VIEW = 1;
-    private static final int REQUEST_CODE_BROWSER = 2;
-    private static final int REQUEST_CODE_INTENT_FILTER = 3;
-    private static final int REQUEST_CODE_INTENT_FILTER_GOOGLE = 4;
+    private static final int REQUEST_CODE_WEB_VIEW = 10;
+    private static final int REQUEST_CODE_BROWSER = 20;
+    private static final int REQUEST_CODE_BROWSER_PIN_GOOGLE = 21;
+    private static final int REQUEST_CODE_INTENT_FILTER = 30;
+    private static final int REQUEST_CODE_INTENT_FILTER_GOOGLE = 31;
     public static final String KEY_RESULT = "KEY_RESULT";
 
     private RadioGroup mRadioGroup;
@@ -89,6 +92,10 @@ public class MyActivity extends Activity {
             case R.id.browser_radio_button:
                 activityClass = BrowserActivity.class;
                 requestCode = REQUEST_CODE_BROWSER;
+                break;
+            case R.id.browser_pin_google_radio_button:
+                activityClass = BrowserPinGoogleActivity.class;
+                requestCode = REQUEST_CODE_BROWSER_PIN_GOOGLE;
                 break;
             case R.id.intent_filter_radio_button:
                 activityClass = IntentFilterActivity.class;

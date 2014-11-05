@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.service;
 
 import com.google.gson.annotations.SerializedName;
 

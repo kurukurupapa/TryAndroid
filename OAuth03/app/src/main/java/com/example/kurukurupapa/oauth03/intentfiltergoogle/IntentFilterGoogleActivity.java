@@ -7,8 +7,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.example.kurukurupapa.oauth03.MyActivity;
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.menu.MyActivity;
 
 public class IntentFilterGoogleActivity extends Activity {
     private static final String TAG = IntentFilterGoogleActivity.class.getSimpleName();

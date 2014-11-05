@@ -11,7 +11,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MyActivity"
+            android:name=".menu.MyActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +32,11 @@
             android:name=".browsertwitter.BrowserActivity"
             android:label="@string/title_activity_browser" >
         </activity>
+        <activity
+            android:name=".browserpingoogle20.BrowserPinGoogleActivity"
+            android:label="@string/title_activity_browser_pin_google" >
+        </activity>
+
         <!--
         ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
         -->

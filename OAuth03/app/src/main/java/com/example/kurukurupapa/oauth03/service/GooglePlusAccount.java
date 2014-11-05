@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.service;
 
 /**
  * Google+ API（https://www.googleapis.com/plus/v1/people/me）の結果を保持するクラスです。

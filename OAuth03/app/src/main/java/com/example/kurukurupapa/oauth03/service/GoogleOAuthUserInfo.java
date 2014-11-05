@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03;
+package com.example.kurukurupapa.oauth03.service;
 
 /**
  * https://www.googleapis.com/oauth2/v2/userinfo の結果を保持するクラスです。

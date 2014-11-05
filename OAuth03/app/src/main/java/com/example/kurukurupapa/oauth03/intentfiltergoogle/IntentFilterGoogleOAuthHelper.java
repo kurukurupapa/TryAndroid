@@ -6,9 +6,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.kurukurupapa.oauth03.GoogleOAuthUserInfo;
-import com.example.kurukurupapa.oauth03.GooglePlusAccount;
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.service.GoogleOAuthUserInfo;
+import com.example.kurukurupapa.oauth03.service.GooglePlusAccount;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -67,9 +67,9 @@ public class IntentFilterGoogleOAuthHelper {
     public IntentFilterGoogleOAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
         this.mOkRunnable = okRunnable;
-        this.mClientKey = context.getString(R.string.google_client_key);
-        this.mClientSecret = context.getString(R.string.google_client_secret);
-        this.mRedirectUrl = context.getString(R.string.google_redirect_url);
+        this.mClientKey = context.getString(R.string.google_web_client_key);
+        this.mClientSecret = context.getString(R.string.google_web_client_secret);
+        this.mRedirectUrl = context.getString(R.string.google_web_redirect_url);
     }
 
     public void start() {

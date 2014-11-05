@@ -5,12 +5,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
-import com.example.kurukurupapa.oauth03.MyActivity;
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.menu.MyActivity;
 
 public class IntentFilterActivity extends Activity {
     private static final String TAG = IntentFilterActivity.class.getSimpleName();

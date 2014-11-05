@@ -7,8 +7,8 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.example.kurukurupapa.oauth03.MyActivity;
 import com.example.kurukurupapa.oauth03.R;
+import com.example.kurukurupapa.oauth03.menu.MyActivity;
 
 public class WebViewActivity extends Activity {
     private static final String TAG = WebViewActivity.class.getSimpleName();
