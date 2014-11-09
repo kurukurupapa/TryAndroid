@@ -4,10 +4,12 @@
     <string name="app_name">OAuth03</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_web_view">WebViewActivity</string>
-    <string name="title_activity_browser">BrowserActivity</string>
-    <string name="title_activity_browser_pin_google">BrowserPinGoogleActivity</string>
-    <string name="title_activity_intent_filter">IntentFilterActivity</string>
-    <string name="title_activity_intent_filter_google">IntentFilterGoogleActivity</string>
+    <string name="title_activity_web_view_twitter10a">WebViewTwitter10aActivity</string>
+    <string name="title_activity_web_view_google20">WebViewGoogle20Activity</string>
+    <string name="title_activity_browser_intent_twitter10a">BrowserIntentTwitter10aActivity</string>
+    <string name="title_activity_browser_intent_google20">BrowserIntentGoogle20Activity</string>
+    <string name="title_activity_browser_pin_twitter10a">BrowserPinTwitter10aActivity</string>
+    <string name="title_activity_browser_pin_google20">BrowserPinGoogle20Activity</string>
+    <string name="title_activity_account_manager">AccountManagerActivity</string>
 
 </resources>

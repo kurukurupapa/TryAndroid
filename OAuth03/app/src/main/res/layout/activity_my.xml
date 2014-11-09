@@ -13,56 +13,88 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
+        <TextView
+            android:text="AndroidアプリでOAuth認証します。\n"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/text_view" />
+
         <ScrollView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/scrollView"
             android:layout_weight="1">
 
-            <TextView
-                android:text="@string/hello_world"
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/text_view" />
+                android:layout_height="fill_parent">
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="実装方法"
+                    android:id="@+id/implementation_text_view" />
+
+                <RadioGroup
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/implementation_radio_group">
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="WebView＋コールバック"
+                        android:id="@+id/web_view_radio_button"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ブラウザアプリ＋コールバック"
+                        android:id="@+id/browser_intent_radio_button" />
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ブラウザアプリ＋PIN"
+                        android:id="@+id/browser_pin_radio_button" />
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="AccountManager"
+                        android:id="@+id/account_manager_radio_button" />
+                </RadioGroup>
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="使用するWebサービス"
+                    android:id="@+id/service_text_view" />
+
+                <RadioGroup
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/service_radio_group">
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Twitter OAuth 1.0a"
+                        android:id="@+id/twitter_10a_radio_button"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Google OAuth 2.0"
+                        android:id="@+id/google_20_radio_button" />
+                </RadioGroup>
+            </LinearLayout>
         </ScrollView>
-
-        <RadioGroup
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/radio_group">
-
-            <RadioButton
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="WebView方式（Twitter）"
-                android:id="@+id/web_view_radio_button"
-                android:checked="true" />
-
-            <RadioButton
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="ブラウザPIN方式（Twitter）"
-                android:id="@+id/browser_radio_button" />
-
-            <RadioButton
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="ブラウザPIN方式（Google）"
-                android:id="@+id/browser_pin_google_radio_button" />
-
-            <RadioButton
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="ブラウザIntentFilter方式（Twitter）"
-                android:id="@+id/intent_filter_radio_button" />
-
-            <RadioButton
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="ブラウザIntentFilter方式（Google）"
-                android:id="@+id/intent_filter_google_radio_button" />
-        </RadioGroup>
 
         <Button
             android:layout_width="fill_parent"
@@ -70,6 +102,7 @@
             android:text="開始"
             android:id="@+id/start_button"
             android:onClick="onStartButtonClick" />
+
     </LinearLayout>
 
 </RelativeLayout>

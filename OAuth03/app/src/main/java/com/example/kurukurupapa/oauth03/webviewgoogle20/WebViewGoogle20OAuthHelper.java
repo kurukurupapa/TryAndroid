@@ -1,10 +1,11 @@
-package com.example.kurukurupapa.oauth03.browserintentgoogle20;
+package com.example.kurukurupapa.oauth03.webviewgoogle20;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.example.kurukurupapa.oauth03.R;
 import com.example.kurukurupapa.oauth03.service.GoogleOAuthUserInfo;
@@ -21,55 +22,28 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-/**
- * Scribeライブラリを使用して、GoogleのOAuth 2.0認証を行います。
- *
- * ※当アプリから、ブラウザを起動する際、標準ブラウザだと上手く動いたけど、Chromeだとダメでした。
- *
- * 事前準備
- * 次のサイトで、プロジェクトを作成しました。
- *   Google Developers Console
- *   https://console.developers.google.com/project
- * プロジェクトでは、次の設定を行っておきました。
- * 「APIと認証＞API」ページで、「Google+ API」を有効化しました。
- * 「APIと認証＞認証情報」ページで、「新しいクライアントIDを作成」ボタンをクリックし、
- * アプリケーションの種類を「インストールされているアプリケーション」、インストールされているアプリケーションの種類を「その他」にして、
- * 登録し、クライアントID、クライアントシークレット、リダイレクトURIが作成されました。
- * 「APIと認証＞同意画面」ページで、必須項目を登録しておきました。
- * ※同意画面の設定を忘れると、当アプリからGoogleの認証画面を呼び出したときに、「invalid_client」エラーが表示されました。
- *
- * Scribe 1.3.5で、Google OAuth 2.0の認証を行うには、ひと手間必要な模様でした。
- * 次のプログラムを、当アプリに組み込みました。
- *   Google OAuth2.0 for scribe-java
- *   https://gist.github.com/yincrash/2465453#file-google2api-java
- *
- * 注意事項
- * OAuth2.0では、リクエストトークンの取得が不要になりました。
- *
- * 参考
- * 開発日誌 (7) : scribeでGoogle OAuth 2.0 (client_secretなしで認証) - 家族ToDo(仮)開発日誌
- * http://kazokutodo.hatenablog.com/entry/2014/02/10/011927
- */
-public class IntentFilterGoogleOAuthHelper {
-    private static final String TAG = IntentFilterGoogleOAuthHelper.class.getSimpleName();
+public class WebViewGoogle20OAuthHelper {
+    private static final String TAG = WebViewGoogle20OAuthHelper.class.getSimpleName();
 
-    private final String mClientKey;
-    private final String mClientSecret;
-    private final String mRedirectUrl;
+    private final String mApiKey;
+    private final String mApiSecret;
+    private final String mCallbackUrl;
     private final Context mContext;
+    private final WebView mWebView;
     private final Runnable mOkRunnable;
 
     private OAuthService mService;
     private Token mAccessToken;
     private String mOAuthVerifier;
-    private String mResult;
+    private String mJson;
 
-    public IntentFilterGoogleOAuthHelper(Context context, Runnable okRunnable) {
+    public WebViewGoogle20OAuthHelper(Context context, WebView webView, Runnable okRunnable) {
         this.mContext = context;
+        this.mWebView = webView;
         this.mOkRunnable = okRunnable;
-        this.mClientKey = context.getString(R.string.google_web_client_key);
-        this.mClientSecret = context.getString(R.string.google_web_client_secret);
-        this.mRedirectUrl = context.getString(R.string.google_web_redirect_url);
+        this.mApiKey = context.getString(R.string.google_web_client_key);
+        this.mApiSecret = context.getString(R.string.google_web_client_secret);
+        this.mCallbackUrl = context.getString(R.string.google_web_redirect_url);
     }
 
     public void start() {
@@ -95,7 +69,7 @@ public class IntentFilterGoogleOAuthHelper {
     public void clear() {
         mOAuthVerifier = null;
         mAccessToken = null;
-        mResult = null;
+        mJson = null;
     }
 
     /**
@@ -103,22 +77,18 @@ public class IntentFilterGoogleOAuthHelper {
      *
      * Consumer Key (API Key), Consumer Secret (API Secret)
      * 事前に、Google Developers Consoleで、入手した値を設定します。
-     *
-     * コールバックURL
-     * 事前に、Google Developers Consoleで、入手した値を設定します。
-     * 独自スキーマを指定すると、エラーになりました。
      */
     private void createService() {
-        Log.v(TAG, "createService called");
         if (mService != null) {
             return;
         }
+        Log.v(TAG, "createService called");
 
         mService = new ServiceBuilder()
                 .provider(Google2Api.class)
-                .apiKey(mClientKey)
-                .apiSecret(mClientSecret)
-                .callback(mRedirectUrl)
+                .apiKey(mApiKey)
+                .apiSecret(mApiSecret)
+                .callback(mCallbackUrl)
                 .scope(
                         "https://www.googleapis.com/auth/userinfo.profile " +
                         "https://www.googleapis.com/auth/userinfo.email " +
@@ -131,53 +101,78 @@ public class IntentFilterGoogleOAuthHelper {
     /**
      * ユーザに認証してもらう
      *
-     * コールバックURLとインテントフィルターを使用します。
-     * ※PINは使用しません。
-     *
-     * OAuthの認証にWebViewを使うのはやめよう - Shogo's Blog
-     * http://shogo82148.github.io/blog/2012/11/24/no-more-webview/
-     *
-     * AndroidからGoogle OAuthでプロフィール情報にアクセスする方法 - 今日の役に立たない一言 － Today’s Trifle! －
-     * http://d.hatena.ne.jp/satoshis/20130119/p1
-     *
-     * 特定のURLをフックしてアプリを起動させる（暗黙的インテント） - tomstay's memo
-     * http://tomstay.hatenablog.jp/entry/20110719/1311072062
+     * WebViewを使用します。
      */
     private boolean auth() {
-        Log.v(TAG, "auth called");
         if (mOAuthVerifier != null) {
             return true;
         }
+        Log.v(TAG, "auth called");
 
         // 認証ページURLを取得します。
         final String authUrl = mService.getAuthorizationUrl(null);
         Log.v(TAG, "authUrl=" + authUrl);
 
-        // ブラウザに、連携アプリ認証画面を表示します。
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-        mContext.startActivity(intent);
+        // コールバックURLを使用する場合は、
+        // 認証成功後、コールバックURLへ遷移し、
+        // GETパラメータとして、oauth_verifierが取得できます。
 
+        // WebViewを使った認証
+        // ただし、セキュリティ的に推奨されない。
+        // WebViewはUIスレッドで操作する必要がある。
+        // 参考：
+        // Twitter4jを使ってOAuth認証をアプリ内で行う方法 - 素人のアンドロイドアプリ開発日記
+        // http://andante.in/i/android%E3%82%A2%E3%83%97%E3%83%AAtips/twitter4j%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6oauth%E8%AA%8D%E8%A8%BC%E3%82%92%E3%82%A2%E3%83%97%E3%83%AA%E5%86%85%E3%81%A7%E8%A1%8C%E3%81%86%E6%96%B9%E6%B3%95/
+
+        // JavaScript有効化
+        //mWebView.getSettings().setJavaScriptEnabled(true);
+        // ボタン/リンク操作で標準ブラウザを起動させない
+        mWebView.setWebViewClient(new WebViewClient(){
+            /**
+             * ページ描画完了時の処理です。
+             */
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                Log.v(TAG, "url=" + url);
+
+                if (url != null && url.startsWith(mCallbackUrl)) {
+                    setOAuthVerifier(Uri.parse(url));
+                }
+            }
+        });
+        // WebViewに、連携アプリ認証画面を表示します。
+        mWebView.loadUrl(authUrl);
         return false;
     }
 
-    /**
-     * ブラウザでの認証後、コールバックURLに遷移した際に付加される（GETパラメータ）認証情報を設定します。
-     * @param uri コールバックURL＋認証情報（GETパラメータ）
-     */
     public void setOAuthVerifier(Uri uri) {
         Log.v(TAG, "setOAuthVerifier called");
-        mOAuthVerifier = uri.getQueryParameter("code");
+        String oauthToken = uri.getQueryParameter("oauth_token");
+        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
+
+//        // トークンをチェックします。
+//        if (oauthToken == null || !oauthToken.equals(mRequestToken.getToken())) {
+//            // 処理を中止します。
+//            Log.d(TAG, "トークンエラーです。oauthToken=" + oauthToken + ",mRequestToken.getToken()=" + mRequestToken.getToken());
+//            Toast.makeText(mContext, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+//            clear();
+//            return;
+//        }
+
+        mOAuthVerifier = oauthVerifier;
         Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
+        start();
     }
 
     /**
      * アクセストークン（access Token）を取得
      */
     private boolean getAccessToken() {
-        Log.v(TAG, "getAccessToken called");
         if (mAccessToken != null) {
             return true;
         }
+        Log.v(TAG, "getAccessToken called");
 
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
@@ -205,7 +200,7 @@ public class IntentFilterGoogleOAuthHelper {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 // HTTP通信を行うため、非UIスレッドで実行します。
-                mResult = requestOAuthUserInfo() + "\n" + requestPlusPeople();
+                mJson = requestOAuthUserInfo() + "\n" + requestPlusPeople();
                 return true;
             }
 
@@ -247,6 +242,6 @@ public class IntentFilterGoogleOAuthHelper {
     }
 
     public String getResult() {
-        return mResult;
+        return mJson;
     }
 }

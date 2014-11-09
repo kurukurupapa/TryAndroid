@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.browserpingoogle20;
+package com.example.kurukurupapa.oauth03.browserintentgoogle20;
 
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +24,8 @@ import org.scribe.oauth.OAuthService;
 /**
  * Scribeライブラリを使用して、GoogleのOAuth 2.0認証を行います。
  *
+ * ※当アプリから、ブラウザを起動する際、標準ブラウザだと上手く動いたけど、Chromeだとダメでした。
+ *
  * 事前準備
  * 次のサイトで、プロジェクトを作成しました。
  *   Google Developers Console
@@ -48,24 +50,26 @@ import org.scribe.oauth.OAuthService;
  * 開発日誌 (7) : scribeでGoogle OAuth 2.0 (client_secretなしで認証) - 家族ToDo(仮)開発日誌
  * http://kazokutodo.hatenablog.com/entry/2014/02/10/011927
  */
-public class BrowserPinGoogleOAuthHelper {
-    private static final String TAG = BrowserPinGoogleOAuthHelper.class.getSimpleName();
+public class BrowserIntentGoogle20OAuthHelper {
+    private static final String TAG = BrowserIntentGoogle20OAuthHelper.class.getSimpleName();
 
     private final String mClientKey;
     private final String mClientSecret;
+    private final String mRedirectUrl;
     private final Context mContext;
     private final Runnable mOkRunnable;
 
     private OAuthService mService;
     private Token mAccessToken;
-    private String mOAuthPin;
+    private String mOAuthVerifier;
     private String mResult;
 
-    public BrowserPinGoogleOAuthHelper(Context context, Runnable okRunnable) {
+    public BrowserIntentGoogle20OAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
         this.mOkRunnable = okRunnable;
-        this.mClientKey = context.getString(R.string.google_native_client_key);
-        this.mClientSecret = context.getString(R.string.google_native_client_secret);
+        this.mClientKey = context.getString(R.string.google_web_client_key);
+        this.mClientSecret = context.getString(R.string.google_web_client_secret);
+        this.mRedirectUrl = context.getString(R.string.google_web_redirect_url);
     }
 
     public void start() {
@@ -89,7 +93,7 @@ public class BrowserPinGoogleOAuthHelper {
     }
 
     public void clear() {
-        mOAuthPin = null;
+        mOAuthVerifier = null;
         mAccessToken = null;
         mResult = null;
     }
@@ -100,7 +104,9 @@ public class BrowserPinGoogleOAuthHelper {
      * Consumer Key (API Key), Consumer Secret (API Secret)
      * 事前に、Google Developers Consoleで、入手した値を設定します。
      *
-     * コールバックURL不要
+     * コールバックURL
+     * 事前に、Google Developers Consoleで、入手した値を設定します。
+     * 独自スキーマを指定すると、エラーになりました。
      */
     private void createService() {
         Log.v(TAG, "createService called");
@@ -112,6 +118,7 @@ public class BrowserPinGoogleOAuthHelper {
                 .provider(Google2Api.class)
                 .apiKey(mClientKey)
                 .apiSecret(mClientSecret)
+                .callback(mRedirectUrl)
                 .scope(
                         "https://www.googleapis.com/auth/userinfo.profile " +
                         "https://www.googleapis.com/auth/userinfo.email " +
@@ -124,18 +131,21 @@ public class BrowserPinGoogleOAuthHelper {
     /**
      * ユーザに認証してもらう
      *
-     * PINを使用します。
-     * ※コールバックURLは使用しません。
+     * コールバックURLとインテントフィルターを使用します。
+     * ※PINは使用しません。
      *
      * OAuthの認証にWebViewを使うのはやめよう - Shogo's Blog
      * http://shogo82148.github.io/blog/2012/11/24/no-more-webview/
      *
      * AndroidからGoogle OAuthでプロフィール情報にアクセスする方法 - 今日の役に立たない一言 － Today’s Trifle! －
      * http://d.hatena.ne.jp/satoshis/20130119/p1
+     *
+     * 特定のURLをフックしてアプリを起動させる（暗黙的インテント） - tomstay's memo
+     * http://tomstay.hatenablog.jp/entry/20110719/1311072062
      */
     private boolean auth() {
         Log.v(TAG, "auth called");
-        if (mOAuthPin != null && mOAuthPin.length() > 0) {
+        if (mOAuthVerifier != null) {
             return true;
         }
 
@@ -150,9 +160,14 @@ public class BrowserPinGoogleOAuthHelper {
         return false;
     }
 
-    public void setOAuthPin(String oauthPin) {
-        mOAuthPin = oauthPin;
-        Log.v(TAG, "mOAuthPin=" + mOAuthPin);
+    /**
+     * ブラウザでの認証後、コールバックURLに遷移した際に付加される（GETパラメータ）認証情報を設定します。
+     * @param uri コールバックURL＋認証情報（GETパラメータ）
+     */
+    public void setOAuthVerifier(Uri uri) {
+        Log.v(TAG, "setOAuthVerifier called");
+        mOAuthVerifier = uri.getQueryParameter("code");
+        Log.d(TAG, "mOAuthVerifier=" + mOAuthVerifier);
     }
 
     /**
@@ -168,7 +183,7 @@ public class BrowserPinGoogleOAuthHelper {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 // HTTP通信を行うため、非UIスレッドで実行します。
-                Verifier verifier = new Verifier(mOAuthPin);
+                Verifier verifier = new Verifier(mOAuthVerifier);
                 mAccessToken = mService.getAccessToken(null, verifier);
                 Log.v(TAG, "mAccessToken=" + mAccessToken);
                 return true;

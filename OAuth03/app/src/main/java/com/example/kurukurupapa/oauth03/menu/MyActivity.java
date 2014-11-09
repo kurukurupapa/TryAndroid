@@ -5,15 +5,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
 import com.example.kurukurupapa.oauth03.R;
-import com.example.kurukurupapa.oauth03.browserintentgoogle20.IntentFilterGoogleActivity;
-import com.example.kurukurupapa.oauth03.browserintenttwitter10a.IntentFilterActivity;
-import com.example.kurukurupapa.oauth03.browserpingoogle20.BrowserPinGoogleActivity;
-import com.example.kurukurupapa.oauth03.browserpintwitter10a.BrowserActivity;
-import com.example.kurukurupapa.oauth03.webviewtwitter10a.WebViewActivity;
+import com.example.kurukurupapa.oauth03.accountmanager.AccountManagerActivity;
+import com.example.kurukurupapa.oauth03.browserintentgoogle20.BrowserIntentGoogle20Activity;
+import com.example.kurukurupapa.oauth03.browserintenttwitter10a.BrowserIntentTwitter10aActivity;
+import com.example.kurukurupapa.oauth03.browserpingoogle20.BrowserPinGoogle20Activity;
+import com.example.kurukurupapa.oauth03.browserpintwitter10a.BrowserPinTwitter10aActivity;
+import com.example.kurukurupapa.oauth03.webviewgoogle20.WebViewGoogle20Activity;
+import com.example.kurukurupapa.oauth03.webviewtwitter10a.WebViewTwitter10aActivity;
+
+import java.util.HashMap;
 
 /**
  * Androidで、Twitter,GoogleのOAuth認証をしてみます。
@@ -36,16 +40,40 @@ public class MyActivity extends Activity {
     private static final int REQUEST_CODE_INTENT_FILTER_GOOGLE = 31;
     public static final String KEY_RESULT = "KEY_RESULT";
 
-    private RadioGroup mRadioGroup;
-    private TextView mTextView;
+    private RadioGroup mImplementationRadioGroup;
+    private RadioGroup mServiceRadioGroup;
+    private HashMap<int[], Class<? extends Activity>> mActivityMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
 
-        mRadioGroup = (RadioGroup) findViewById(R.id.radio_group);
-        mTextView = (TextView) findViewById(R.id.text_view);
+        mImplementationRadioGroup = (RadioGroup) findViewById(R.id.implementation_radio_group);
+        mServiceRadioGroup = (RadioGroup) findViewById(R.id.service_radio_group);
+
+        // ラジオボタンの組み合わせと、対応するアクティビティを定義します。
+        mActivityMap = new HashMap<int[], Class<? extends Activity>>();
+        mActivityMap.put(new int[]{R.id.web_view_radio_button, R.id.twitter_10a_radio_button}, WebViewTwitter10aActivity.class);
+        mActivityMap.put(new int[]{R.id.web_view_radio_button, R.id.google_20_radio_button}, WebViewGoogle20Activity.class);
+        mActivityMap.put(new int[]{R.id.browser_intent_radio_button, R.id.twitter_10a_radio_button}, BrowserIntentTwitter10aActivity.class);
+        mActivityMap.put(new int[]{R.id.browser_intent_radio_button, R.id.google_20_radio_button}, BrowserIntentGoogle20Activity.class);
+        mActivityMap.put(new int[]{R.id.browser_pin_radio_button, R.id.twitter_10a_radio_button}, BrowserPinTwitter10aActivity.class);
+        mActivityMap.put(new int[]{R.id.browser_pin_radio_button, R.id.google_20_radio_button}, BrowserPinGoogle20Activity.class);
+        mActivityMap.put(new int[]{R.id.account_manager_radio_button, R.id.google_20_radio_button}, AccountManagerActivity.class);
+
+        // 2つのラジオグループで、組み合わせ不可のラジオボタンを非活性にします。
+        mImplementationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if (radioGroup.getCheckedRadioButtonId() == R.id.account_manager_radio_button) {
+                    findViewById(R.id.twitter_10a_radio_button).setEnabled(false);
+                    ((RadioButton) findViewById(R.id.google_20_radio_button)).setChecked(true);
+                } else {
+                    findViewById(R.id.twitter_10a_radio_button).setEnabled(true);
+                }
+            }
+        });
     }
 
 //    @Override
@@ -67,67 +95,22 @@ public class MyActivity extends Activity {
 //        return super.onOptionsItemSelected(item);
 //    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.v(TAG, "onResume called");
-
-        Intent intent = getIntent();
-        String result = intent.getStringExtra(KEY_RESULT);
-        if (result != null) {
-            setResult(result);
-        }
-    }
-
     public void onStartButtonClick(View v) {
         Log.v(TAG, "onStartButtonClick called");
 
         Class activityClass = null;
-        int requestCode = -1;
-        switch (mRadioGroup.getCheckedRadioButtonId()) {
-            case R.id.web_view_radio_button:
-                activityClass = WebViewActivity.class;
-                requestCode = REQUEST_CODE_WEB_VIEW;
-                break;
-            case R.id.browser_radio_button:
-                activityClass = BrowserActivity.class;
-                requestCode = REQUEST_CODE_BROWSER;
-                break;
-            case R.id.browser_pin_google_radio_button:
-                activityClass = BrowserPinGoogleActivity.class;
-                requestCode = REQUEST_CODE_BROWSER_PIN_GOOGLE;
-                break;
-            case R.id.intent_filter_radio_button:
-                activityClass = IntentFilterActivity.class;
-                requestCode = REQUEST_CODE_INTENT_FILTER;
-                break;
-            case R.id.intent_filter_google_radio_button:
-                activityClass = IntentFilterGoogleActivity.class;
-                requestCode = REQUEST_CODE_INTENT_FILTER_GOOGLE;
-                break;
+        for (int[] key : mActivityMap.keySet()) {
+            if (key[0] == mImplementationRadioGroup.getCheckedRadioButtonId()
+                    && key[1] == mServiceRadioGroup.getCheckedRadioButtonId()) {
+                activityClass = mActivityMap.get(key);
+            }
         }
         Intent intent = new Intent();
         intent.setClass(this, activityClass);
-        startActivityForResult(intent, requestCode);
+        startActivity(intent);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        switch (resultCode) {
-            case RESULT_OK:
-                setResult(intent.getStringExtra(KEY_RESULT));
-                break;
-            default:
-                setResult("");
-                break;
-        }
-    }
-
-    private void setResult(String result) {
-        if (result == null || result.isEmpty()) {
-            mTextView.setText("");
-            return;
-        }
-        mTextView.setText(result);
+    public void onImplementationRadioGroupClick(View v) {
+        Log.v(TAG, "onImplementationRadioGroupClick called");
     }
 }

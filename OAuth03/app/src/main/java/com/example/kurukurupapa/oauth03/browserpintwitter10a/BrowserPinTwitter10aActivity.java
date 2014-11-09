@@ -6,34 +6,38 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kurukurupapa.oauth03.R;
 import com.example.kurukurupapa.oauth03.menu.MyActivity;
 
-public class BrowserActivity extends Activity {
-    private static final String TAG = BrowserActivity.class.getSimpleName();
+public class BrowserPinTwitter10aActivity extends Activity {
+    private static final String TAG = BrowserPinTwitter10aActivity.class.getSimpleName();
 
-    private BrowserOAuthHelper mOAuthHelper;
+    private BrowserPinTwitter10aOAuthHelper mOAuthHelper;
     private EditText mPinEditText;
+    private TextView mResultTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_browser);
+        setContentView(R.layout.activity_browser_pin_twitter10a);
 
-        mOAuthHelper = new BrowserOAuthHelper(this, new Runnable() {
+        mOAuthHelper = new BrowserPinTwitter10aOAuthHelper(this, new Runnable() {
             @Override
             public void run() {
                 onOAuthOk();
             }
         });
         mPinEditText = (EditText) findViewById(R.id.pin_edit_text);
+        mResultTextView = (TextView) findViewById(R.id.result_text_view);
     }
 
     public void onBrowserButtonClick(View v) {
         Log.v(TAG, "onBrowserButtonClick called");
         mPinEditText.setText("");
+        mResultTextView.setText("");
         mOAuthHelper.clear();
         mOAuthHelper.start();
     }
@@ -57,9 +61,6 @@ public class BrowserActivity extends Activity {
 
     private void onOAuthOk() {
         Log.v(TAG, "onOAuthOk called");
-        Intent intent = new Intent();
-        intent.putExtra(MyActivity.KEY_RESULT, mOAuthHelper.getResult());
-        setResult(RESULT_OK, intent);
-        finish();
+        mResultTextView.setText(mOAuthHelper.getResult());
     }
 }

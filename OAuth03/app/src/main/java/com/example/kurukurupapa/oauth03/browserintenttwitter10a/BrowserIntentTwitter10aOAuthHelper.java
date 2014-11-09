@@ -21,8 +21,8 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-public class IntentFilterOAuthHelper {
-    private static final String TAG = IntentFilterOAuthHelper.class.getSimpleName();
+public class BrowserIntentTwitter10aOAuthHelper {
+    private static final String TAG = BrowserIntentTwitter10aOAuthHelper.class.getSimpleName();
 
     private final String apiKey;
     private final String apiSecret;
@@ -36,7 +36,7 @@ public class IntentFilterOAuthHelper {
     private String mBody;
     private String mJson;
 
-    public IntentFilterOAuthHelper(Context context, Runnable okRunnable) {
+    public BrowserIntentTwitter10aOAuthHelper(Context context, Runnable okRunnable) {
         this.mContext = context;
         this.mOkRunnable = okRunnable;
         this.apiKey = context.getString(R.string.twitter_api_key);
