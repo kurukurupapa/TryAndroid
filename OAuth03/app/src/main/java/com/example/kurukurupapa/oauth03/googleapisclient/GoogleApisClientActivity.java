@@ -1,4 +1,4 @@
-package com.example.kurukurupapa.oauth03.accountmanager;
+package com.example.kurukurupapa.oauth03.googleapisclient;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,21 +12,33 @@ import android.widget.TextView;
 import com.example.kurukurupapa.oauth03.R;
 
 /**
- * Androidで、AccountManagerを使用して、OAuth認証を行います。
+ * Androidで、AccountManagerとGoogle APIs Client Library for Javaを使用して、OAuth2.0認証を行います。
+ *
+ * 使用ライブラリ：
+ * Google APIs Client Library for Java（https://developers.google.com/api-client-library/java/）
+ * Drive API Client Library for Java（https://developers.google.com/api-client-library/java/apis/drive/v2）
+ * Google Play Service（https://developer.android.com/google/play-services/index.html）
+ *
+ * 事前準備：
+ * 当アプリ用のデジタル署名を作成し、デジタル署名から、証明書フィンガープリント（SHA1）を作成しました。
+ * Google Developer Console（https://console.developers.google.com/）にて、次を行いました。
+ * ・プロジェクトを追加。
+ * ・「APIと認証＞API」ページにて、Drive APIなどを有効化。
+ * ・「APIと認証＞認証情報」ページにて、Androidアプリ用クライアントID作成（パッケージ名、証明書フィンガープリント（SHA1）が必要）。
+ * ・「APIと認証＞同意画面」ページにて、必須項目を設定。
+ * 当アプリビルド時に、デジタル署名を含めるようにしました。
  *
  * 参考：
- * 琴線探査: AndroidのAccountManager経由でGoogleのOAuth2認証を行うには？（外部ライブラリ完全非依存版）
- * http://kinsentansa.blogspot.jp/2012/08/androidaccountmanagergoogleoauth2.html
- * AccountManager | Android Developers
- * http://developer.android.com/reference/android/accounts/AccountManager.html
+ * AndroidでのGoogle Account OAuth認証方法 - Qiita（http://qiita.com/skonb/items/97683c9b0522d753b870）
+ * Android - Google APIs Client Library for JavaからGoogle Drive APIを使用する - Qiita（http://qiita.com/kubotaku1119/items/9df79c568e100c0c7623）
  */
-public class AccountManagerActivity extends Activity {
+public class GoogleApisClientActivity extends Activity {
     public static final int REQUEST_CODE_ACCOUNT_PICKER = 10;
     public static final int REQUEST_CODE_AUTHORIZATION = 20;
 
-    private static final String TAG = AccountManagerActivity.class.getSimpleName();
+    private static final String TAG = GoogleApisClientActivity.class.getSimpleName();
 
-    private AccountManagerOAuthHelper mOAuthHelper;
+    private GoogleApisClientOAuthHelper mOAuthHelper;
     private Button mStartButton;
     private TextView mResultTextView;
 
@@ -39,7 +51,7 @@ public class AccountManagerActivity extends Activity {
         mStartButton = (Button) findViewById(R.id.start_button);
         mResultTextView = (TextView) findViewById(R.id.result_text_view);
 
-        mOAuthHelper = new AccountManagerOAuthHelper(this, new Runnable() {
+        mOAuthHelper = new GoogleApisClientOAuthHelper(this, new Runnable() {
             @Override
             public void run() {
                 onOAuthOk();
@@ -58,9 +70,11 @@ public class AccountManagerActivity extends Activity {
      */
     public void onStartButtonClick(View v) {
         Log.v(TAG, "onStartButtonClick called");
-        showWorkingState();
+        mResultTextView.setText("");
         mOAuthHelper.clear();
         mOAuthHelper.start();
+        mStartButton.setEnabled(false);
+        setProgressBarIndeterminateVisibility(true);
     }
 
     /**
@@ -71,12 +85,14 @@ public class AccountManagerActivity extends Activity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.v(TAG, "onActivityResult called");
-        Log.v(TAG, "requestCode=" + requestCode + ",resultCode=" + resultCode);
         switch (requestCode) {
             // アカウント選択ダイアログ
             case REQUEST_CODE_ACCOUNT_PICKER:
                 mOAuthHelper.onAccountPickerResult(requestCode, resultCode, data);
+                break;
+            // 認証ダイアログ
+            case REQUEST_CODE_AUTHORIZATION:
+                mOAuthHelper.onAuthorizationResult(requestCode, resultCode, data);
                 break;
         }
     }
@@ -86,7 +102,9 @@ public class AccountManagerActivity extends Activity {
      */
     private void onOAuthOk() {
         Log.v(TAG, "onOAuthOk called");
-        showResult(mOAuthHelper.getResult());
+        mResultTextView.setText(mOAuthHelper.getResult());
+        mStartButton.setEnabled(true);
+        setProgressBarIndeterminateVisibility(false);
     }
 
     /**
@@ -94,17 +112,7 @@ public class AccountManagerActivity extends Activity {
      */
     private void onOAuthNg() {
         Log.v(TAG, "onOAuthNg called");
-        showResult("未取得です。");
-    }
-
-    private void showWorkingState() {
-        mStartButton.setEnabled(false);
-        mResultTextView.setText("");
-        setProgressBarIndeterminateVisibility(true);
-    }
-
-    private void showResult(String result) {
-        mResultTextView.setText(result);
+        mResultTextView.setText("未取得です。");
         mStartButton.setEnabled(true);
         setProgressBarIndeterminateVisibility(false);
     }

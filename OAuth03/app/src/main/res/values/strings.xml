@@ -10,6 +10,7 @@
     <string name="title_activity_browser_intent_google20">BrowserIntentGoogle20Activity</string>
     <string name="title_activity_browser_pin_twitter10a">BrowserPinTwitter10aActivity</string>
     <string name="title_activity_browser_pin_google20">BrowserPinGoogle20Activity</string>
+    <string name="title_activity_google_apis_client">GoogleApisClientActivity</string>
     <string name="title_activity_account_manager">AccountManagerActivity</string>
 
 </resources>

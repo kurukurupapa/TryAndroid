@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -23,15 +26,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".webviewtwitter10a.WebViewTwitter10aActivity"
-            android:label="@string/title_activity_web_view_twitter10a" >
-        </activity>
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <!-- WebView＋コールバック方式 -->
+        <activity
+            android:name=".webviewtwitter10a.WebViewTwitter10aActivity"
+            android:label="@string/title_activity_web_view_twitter10a" >
+        </activity>
+
+        <!-- 外部ブラウザアプリ＋PIN方式 -->
         <activity
             android:name=".browserpintwitter10a.BrowserPinTwitter10aActivity"
             android:label="@string/title_activity_browser_pin_twitter10a" >
@@ -41,6 +47,7 @@
             android:label="@string/title_activity_browser_pin_google20" >
         </activity>
 
+        <!-- 外部ブラウザアプリ＋コールバック方式 -->
         <!--
         ブラウザからインテントフィルタで戻ってくるために、singleTask or singleInstanceを設定します。
         -->
@@ -70,6 +77,11 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https" android:host="tryandroidoauth.kurukurupapa.co.jp"/>
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".googleapisclient.GoogleApisClientActivity"
+            android:label="@string/title_activity_google_apis_client" >
         </activity>
 
         <activity

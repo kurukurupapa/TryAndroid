@@ -1,48 +1,54 @@
 package com.example.kurukurupapa.oauth03.accountmanager;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.example.kurukurupapa.oauth03.R;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
+import com.example.kurukurupapa.oauth03.service.GoogleOAuthUserInfo;
+import com.example.kurukurupapa.oauth03.service.GooglePlusAccount;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 public class AccountManagerOAuthHelper {
     private static final String TAG = AccountManagerOAuthHelper.class.getSimpleName();
 
-    private final AccountManagerActivity mActivity;
+    private final Activity mActivity;
     private final Runnable mOkRunnable;
     private final Runnable mNgRunnable;
-    private GoogleAccountCredential mCredential;
-    private Drive mDrive;
-    private UserRecoverableAuthIOException mUserRecoverableAuthIOException;
-    private StringBuilder mResult;
+    private final String mClientKey;
+    private String mAccountName;
+    private String mAccountType;
+    private String mAuthToken;
+    private String mResult;
 
-    public AccountManagerOAuthHelper(AccountManagerActivity activity, Runnable okRunnable, Runnable ngRunnable) {
+    public AccountManagerOAuthHelper(Activity activity, Runnable okRunnable, Runnable ngRunnable) {
         mActivity = activity;
         mOkRunnable = okRunnable;
         mNgRunnable = ngRunnable;
+        mClientKey = mActivity.getString(R.string.google_native_client_key);
     }
 
     public void clear() {
-        mCredential = null;
-        mDrive = null;
-        mUserRecoverableAuthIOException = null;
+        mAccountName = null;
+        mAuthToken = null;
         mResult = null;
     }
 
@@ -50,24 +56,20 @@ public class AccountManagerOAuthHelper {
      * OAuth処理を開始します。
      */
     public void start() {
-        // GoogleAccountCredentialオブジェクトを作成
-        createCredential();
+        Log.v(TAG, "start called");
 
         // アカウントを選択
         if (!setSelectedAccount()) {
             return;
         }
 
-        // Googleドライブサービスのオブジェクトを作成
-        createDrive();
-
         // 認証
         if (!auth()) {
             return;
         }
 
-        // Googleサービスアクセス
-        if (!requestDriveFileList()) {
+        // Webサービスアクセス
+        if (!request()) {
             return;
         }
 
@@ -76,30 +78,20 @@ public class AccountManagerOAuthHelper {
     }
 
     /**
-     * GoogleAccountCredentialオブジェクトを作成します。
-     */
-    private void createCredential() {
-        if (mCredential != null) {
-            return;
-        }
-
-        List<String> scopes = Arrays.asList(
-                DriveScopes.DRIVE_READONLY
-        );
-        mCredential = GoogleAccountCredential.usingOAuth2(mActivity, scopes);
-        Log.v(TAG, "GoogleAccountCredentialオブジェクトを作成しました。");
-    }
-
-    /**
      * アカウントを選択します。
      * @return 後続処理続行可能になった場合true
      */
     private boolean setSelectedAccount() {
-        if (mCredential.getSelectedAccount() != null) {
+        if (mAccountName != null) {
             return true;
         }
 
-        mActivity.startActivityForResult(mCredential.newChooseAccountIntent(), AccountManagerActivity.REQUEST_CODE_ACCOUNT_PICKER);
+        Intent intent = AccountManager.get(mActivity).newChooseAccountIntent(
+                null, null, new String[]{
+                        "com.google"
+                },
+                false, null, null, null, null);
+        mActivity.startActivityForResult(intent, AccountManagerActivity.REQUEST_CODE_ACCOUNT_PICKER);
         Log.v(TAG, "アカウント選択ダイアログを起動しました。");
         return false;
     }
@@ -116,9 +108,9 @@ public class AccountManagerOAuthHelper {
             return;
         }
 
-        String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-        mCredential.setSelectedAccountName(accountName);
-        Log.v(TAG, "アカウントが選択されました。accountName=" + accountName);
+        mAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+        mAccountType = data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE);
+        Log.v(TAG, "アカウントが選択されました。accountName=" + mAccountName + ",accountType=" + mAccountType);
 
         // ※必要ならアカウント名を保存しておきます。
 
@@ -126,56 +118,110 @@ public class AccountManagerOAuthHelper {
     }
 
     /**
-     * Googleドライブサービスのオブジェクトを作成します。
-     */
-    private void createDrive() {
-        if (mDrive != null) {
-            return;
-        }
-
-        mDrive = new Drive
-                .Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), mCredential)
-                .setApplicationName(mActivity.getString(R.string.app_name))
-                .build();
-        Log.v(TAG, "Driveオブジェクトを作成しました。");
-    }
-
-    /**
      * 認証します。
      * @return 後続処理続行可能になった場合true
      */
     private boolean auth() {
-        // 認証
-        if (mUserRecoverableAuthIOException == null) {
+        if (mAuthToken != null) {
             return true;
         }
 
-        mActivity.startActivityForResult(mUserRecoverableAuthIOException.getIntent(), AccountManagerActivity.REQUEST_CODE_AUTHORIZATION);
-        mUserRecoverableAuthIOException = null;
-        Log.v(TAG, "認証ダイアログを起動しました。");
+        // FIXME いまいち実装方法が分かりませんでした。
+        AccountManager manager = AccountManager.get(mActivity);
+        manager.getAuthToken(new Account(mAccountName, mAccountType),
+                "oauth2:https://www.googleapis.com/auth/userinfo.profile",
+                //"oauth2:https://www.googleapis.com/auth/userinfo.email",
+                //"oauth2:https://www.googleapis.com/auth/plus.me",
+                null, true, new AccountManagerCallback<Bundle>() {
+                    @Override
+                    public void run(AccountManagerFuture<Bundle> future) {
+                        Bundle bundle = null;
+                        try {
+                            bundle = future.getResult();
+                            Intent intent = (Intent) bundle.get(AccountManager.KEY_INTENT);
+                            Log.v(TAG, "intent=" + intent);
+                            if (intent != null) {
+                                mActivity.startActivity(intent);
+                                return;
+                            }
+                            String accountName = bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+                            String accountType = bundle.getString(AccountManager.KEY_ACCOUNT_TYPE);
+                            mAuthToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+                            Log.v(TAG, "AuthTokenを取得しました。accountName=" + accountName + ",accountType=" + accountType);
+
+                            // OAuth処理を再開します。
+                            start();
+                        } catch (OperationCanceledException e) {
+                            Log.e(TAG, "e=" + e + ",e.message=" + e.getMessage());
+                            Toast.makeText(mActivity, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+                            clear();
+                            mNgRunnable.run();
+                        } catch (IOException e) {
+                            Log.e(TAG, "e=" + e + ",e.message=" + e.getMessage());
+                            Toast.makeText(mActivity, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+                            clear();
+                            mNgRunnable.run();
+                        } catch (AuthenticatorException e) {
+                            e.printStackTrace();
+                            Log.e(TAG, "e=" + e + ",e.message=" + e.getMessage());
+                            Toast.makeText(mActivity, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+                            clear();
+                            mNgRunnable.run();
+                        }
+                    }
+                }, null);
+        Log.v(TAG, "アクセス許可ダイアログを起動しました。");
+
+
+//        manager.getAuthToken(new Account(mAccountName, mAccountType), "oauth2:https://www.googleapis.com/auth/userinfo.profile", true,
+//                new AccountManagerCallback<Bundle>() {
+//                    public void run(AccountManagerFuture<Bundle> future) {
+//                        try {
+//                            Bundle bundle = future.getResult();
+//                            if (bundle.containsKey(AccountManager.KEY_INTENT)) {
+//                                //まだAPIアクセス許可が出ていない場合にgetAuthToken()すると
+//                                //BundleにKEY_INTENTが含まれる。この場合AuthTokenはNULLとなる。
+//                                Log.v("getAuthToken", "アクセス許可画面へ");
+//                                Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
+//                                //「FLAG_ACTIVITY_NEW_TASK」の前の「~」はビット反転演算子
+//                                //これをしないとアクセス許可画面でのボタンクリックを待たずにonActivityResult()が呼ばれてしまう
+//                                intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_NEW_TASK);
+//                                //mActivity.startActivityForResult(intent, REQUEST_CODE_AUTH);
+//                            } else if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+//                                try {
+//                                    String accountName = bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+//                                    String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+//                                    if (authToken == null) {
+//                                        throw new Exception("authTokenがNULL accountName=" + accountName);
+//                                    }
+//                                    Log.v("onGetAuthToken", "AuthToken取得完了 accountName=" + accountName + " authToken=" + authToken);
+////                                    if (authTokenType.equals(AUTH_TOKEN_TYPE_PROFILE)) {
+////                                        getUserInfo(); //ユーザー情報取得開始
+////                                    } else if (authTokenType.equals(AUTH_TOKEN_TYPE_ADSENSE)) {
+////                                        getAdSenseReport(); //レポート取得開始
+////                                    }
+//                                } catch (OperationCanceledException e) {
+//                                    Log.v("onGetAuthToken", "AuthToken取得キャンセル");
+//                                } catch (Exception e) {
+//                                    Log.v("onGetAuthToken", "AuthToken取得失敗", e);
+//                                }
+//                            }
+//                        } catch (Exception e) {
+//                            Log.v("getAuthToken", "AuthToken取得失敗", e);
+//                        }
+//                    }
+//                },
+//                null);
+
+
         return false;
     }
 
     /**
-     * 認証ダイアログにて承認された場合、OAuth処理を再開します。
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
-    public void onAuthorizationResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != AccountManagerActivity.RESULT_OK) {
-            mNgRunnable.run();
-            return;
-        }
-
-        start();
-    }
-
-    /**
-     * Googleサービスにアクセスします。
+     * Webサービスにアクセスします。
      * @return 後続処理続行可能になった場合true
      */
-    private boolean requestDriveFileList() {
+    private boolean request() {
         if (mResult != null) {
             return true;
         }
@@ -184,31 +230,48 @@ public class AccountManagerOAuthHelper {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
-                boolean result = false;
-                try {
-                    FileList fileList = mDrive.files().list().execute();
-                    mResult = new StringBuilder();
-                    for (File file : fileList.getItems()) {
-                        if (mResult.length() > 0) {
-                            mResult.append("\n");
-                        }
-                        mResult.append(file.getTitle());
-                    }
-                    Log.v(TAG, "Googleドライブのファイル一覧を取得しました。");
-                    result = true;
+                // HTTP通信を行うため、非UIスレッドで実行します。
+                DefaultHttpClient client = new DefaultHttpClient();
+                mResult = requestOAuthUserInfo(client) + "\n" + requestPlusPeople(client);
+                return true;
+            }
 
-                } catch (UserRecoverableAuthIOException e) {
-                    // 認証が必要な場合に呼び出されます。
-                    mUserRecoverableAuthIOException = e;
-                    result = true;
-                } catch (GoogleAuthIOException e) {
-                    // Google Developer Consoleで、クライアントIDの登録に不備があった場合、または
-                    // 当アプリへのデジタル署名の組み込みに不備があった場合、呼び出されます。
-                    Log.e(TAG, "e=" + e + ", e.message=" + e.getMessage());
+            private String requestOAuthUserInfo(DefaultHttpClient client) {
+                String url = "https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + mAuthToken + "&key=" + mClientKey;
+                HttpGet httpGet = new HttpGet(url);
+                HttpResponse res = null;
+                String body = null;
+                try {
+                    res = client.execute(httpGet);
+                    HttpEntity entity = res.getEntity();
+                    body = EntityUtils.toString(entity);
+                    Log.v(TAG, "url=" + url + ", response=" + body);
                 } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
+                    throw new RuntimeException("", e);
                 }
-                return result;
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                GoogleOAuthUserInfo oauthUserInfo = gson.fromJson(body, GoogleOAuthUserInfo.class);
+                return gson.toJson(oauthUserInfo);
+            }
+
+            private String requestPlusPeople(DefaultHttpClient client) {
+                String url = "https://www.googleapis.com/plus/v1/people/me?access_token=" + mAuthToken + "&key=" + mClientKey;
+                HttpGet httpGet = new HttpGet(url);
+                HttpResponse res = null;
+                String body = null;
+                try {
+                    res = client.execute(httpGet);
+                    HttpEntity entity = res.getEntity();
+                    body = EntityUtils.toString(entity);
+                    Log.v(TAG, "url=" + url + ", response=" + body);
+                } catch (IOException e) {
+                    throw new RuntimeException("", e);
+                }
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                GooglePlusAccount googlePlusAccount = gson.fromJson(body, GooglePlusAccount.class);
+                return gson.toJson(googlePlusAccount);
             }
 
             @Override
@@ -218,6 +281,7 @@ public class AccountManagerOAuthHelper {
                     start();
                 } else {
                     Toast.makeText(mActivity, "エラーが発生しました。", Toast.LENGTH_LONG).show();
+                    clear();
                     mNgRunnable.run();
                 }
             }

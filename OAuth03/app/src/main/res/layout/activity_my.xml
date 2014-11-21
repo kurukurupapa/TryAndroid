@@ -64,6 +64,12 @@
                     <RadioButton
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
+                        android:text="Google APIs Client Library for Java"
+                        android:id="@+id/google_apis_client_radio_button" />
+
+                    <RadioButton
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
                         android:text="AccountManager"
                         android:id="@+id/account_manager_radio_button" />
                 </RadioGroup>

@@ -14,6 +14,7 @@ import com.example.kurukurupapa.oauth03.browserintentgoogle20.BrowserIntentGoogl
 import com.example.kurukurupapa.oauth03.browserintenttwitter10a.BrowserIntentTwitter10aActivity;
 import com.example.kurukurupapa.oauth03.browserpingoogle20.BrowserPinGoogle20Activity;
 import com.example.kurukurupapa.oauth03.browserpintwitter10a.BrowserPinTwitter10aActivity;
+import com.example.kurukurupapa.oauth03.googleapisclient.GoogleApisClientActivity;
 import com.example.kurukurupapa.oauth03.webviewgoogle20.WebViewGoogle20Activity;
 import com.example.kurukurupapa.oauth03.webviewtwitter10a.WebViewTwitter10aActivity;
 
@@ -51,6 +52,8 @@ public class MyActivity extends Activity {
 
         mImplementationRadioGroup = (RadioGroup) findViewById(R.id.implementation_radio_group);
         mServiceRadioGroup = (RadioGroup) findViewById(R.id.service_radio_group);
+        final RadioButton twitter10aRadioButton = (RadioButton) findViewById(R.id.twitter_10a_radio_button);
+        final RadioButton google20RadioButton = (RadioButton) findViewById(R.id.google_20_radio_button);
 
         // ラジオボタンの組み合わせと、対応するアクティビティを定義します。
         mActivityMap = new HashMap<int[], Class<? extends Activity>>();
@@ -60,17 +63,19 @@ public class MyActivity extends Activity {
         mActivityMap.put(new int[]{R.id.browser_intent_radio_button, R.id.google_20_radio_button}, BrowserIntentGoogle20Activity.class);
         mActivityMap.put(new int[]{R.id.browser_pin_radio_button, R.id.twitter_10a_radio_button}, BrowserPinTwitter10aActivity.class);
         mActivityMap.put(new int[]{R.id.browser_pin_radio_button, R.id.google_20_radio_button}, BrowserPinGoogle20Activity.class);
+        mActivityMap.put(new int[]{R.id.google_apis_client_radio_button, R.id.google_20_radio_button}, GoogleApisClientActivity.class);
         mActivityMap.put(new int[]{R.id.account_manager_radio_button, R.id.google_20_radio_button}, AccountManagerActivity.class);
 
         // 2つのラジオグループで、組み合わせ不可のラジオボタンを非活性にします。
         mImplementationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if (radioGroup.getCheckedRadioButtonId() == R.id.account_manager_radio_button) {
-                    findViewById(R.id.twitter_10a_radio_button).setEnabled(false);
-                    ((RadioButton) findViewById(R.id.google_20_radio_button)).setChecked(true);
+                if (radioGroup.getCheckedRadioButtonId() == R.id.account_manager_radio_button
+                        || radioGroup.getCheckedRadioButtonId() == R.id.google_apis_client_radio_button) {
+                    twitter10aRadioButton.setEnabled(false);
+                    google20RadioButton.setChecked(true);
                 } else {
-                    findViewById(R.id.twitter_10a_radio_button).setEnabled(true);
+                    twitter10aRadioButton.setEnabled(true);
                 }
             }
         });
