@@ -1,0 +1,24 @@
+各アプリで送信されてくるインテント内容メモ
+
+
+SmartNews 2.0.4（2014/11/17）
+mAction=android.intent.action.SEND
+mClipData=ClipData { text/plain {T:http://news.mynavi.jp/news/2014/11/29/030/} }
+mType=text/plain
+
+グノシー 4.2.21（2014/11/25）
+mAction=android.intent.action.SEND
+mClipData=ClipData { text/plain {T:「はやぶさ2」 12月1日に打ち上げへ http://news.tbs.co.jp/newseye/tbs_newseye2361115.html} }
+mType=text/plain
+
+Feedly 24.4.0（2014/11/13）
+mAction=android.intent.action.SEND
+mClipData=ClipData { text/plain {T:［初心者向け］こんなときどうする?? GitのTips26選！ - Qiita http://qiita.com/Keisuke69/items/35d60e4e375fc525ccbd} }
+mType=text/plain
+
+
+Pocket 5.7.1（2014/11/25）
+mAction=android.intent.action.SEND
+mClipData=ClipData { text/plain {T:［初心者向け］こんなときどうする?? GitのTips26選！ - Qiita http://qiita.com/Keisuke69/items/35d60e4e375fc525ccbd} }
+mType=text/plain
+
