@@ -95,7 +95,6 @@ public class QueryService {
         Log.d(TAG, "ワークシート数=" + worksheets.size());
         WorksheetEntry worksheet = null;
         for (WorksheetEntry e : worksheets) {
-            Log.v(TAG, e.getTitle().getPlainText());
             if (e.getTitle().getPlainText().equals(SHEET_NAME)) {
                 worksheet = e;
             }
