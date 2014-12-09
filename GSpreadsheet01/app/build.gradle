@@ -1,0 +1,30 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion '20.0.0'
+    defaultConfig {
+        applicationId 'com.example.kurukurupapa.gspreadsheet01'
+        minSdkVersion 15
+        targetSdkVersion 19
+        versionCode 1
+        versionName '1.0'
+    }
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:20.0.0'
+    compile files('libs/gdata-core-1.0.jar')
+    compile files('libs/gdata-spreadsheet-3.0.jar')
+    compile files('libs/gdata-spreadsheet-meta-3.0.jar')
+    compile files('libs/guava-11.0.2.jar')
+}
