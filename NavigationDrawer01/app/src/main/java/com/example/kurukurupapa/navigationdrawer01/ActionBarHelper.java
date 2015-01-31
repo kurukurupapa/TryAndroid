@@ -28,11 +28,13 @@ public class ActionBarHelper {
         int titleTypeValue = Integer.parseInt(titleTypeValueStr);
         switch (titleTypeValue) {
             case 1:
+                // テキストのみ
                 actionBar.setDisplayShowTitleEnabled(true);
                 actionBar.setDisplayShowHomeEnabled(false);
                 actionBar.setDisplayShowCustomEnabled(false);
                 break;
             case 2:
+                // アイコン付きテキスト
                 actionBar.setDisplayShowTitleEnabled(true);
                 actionBar.setDisplayShowHomeEnabled(true);
                 actionBar.setDisplayShowCustomEnabled(false);
@@ -40,6 +42,7 @@ public class ActionBarHelper {
                 actionBar.setDisplayUseLogoEnabled(false);
                 break;
             case 3:
+                // ロゴ
                 actionBar.setDisplayShowTitleEnabled(false);
                 actionBar.setDisplayShowHomeEnabled(true);
                 actionBar.setDisplayShowCustomEnabled(true);
